@@ -2,130 +2,197 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './style.css';
 
-let myLibrary = [];
-
-function Book(name, description, pages, author, read) {
-    this.name = name;
-    this.description = description;
-    this.pages = pages;
-    this.author = author;
-    this.read = read;
-}
-
-Book.prototype.toggleRead = function () {
-    this.read = !this.read;
-}
-
-function addBookToLibrary() {
-    const newName = document.getElementById("new-book-name");
-    const newAuthor = document.getElementById("new-book-author");
-    const newPages = document.getElementById("new-book-pages");
-    const newDescription = document.getElementById("new-book-description");
-
-    if (!newName.validity.valueMissing && !newAuthor.validity.valueMissing && !newPages.validity.valueMissing) {
-        const newBook = new Book(newName.value, newDescription.value, newPages.value, newAuthor.value);
-
-        myLibrary.push(newBook);
-    
-        render(myLibrary);
-    }
-}
-
-function removeBookFromLibrary() {
-    const index = this.getAttribute('libraryindex');
-
-    myLibrary.splice(index, 1);
-    render(myLibrary);
-}
-
-function changeReadStatus() {
-    const index = this.getAttribute('libraryindex');
-
-    myLibrary[index].toggleRead();
-    render(myLibrary);
-}
-
-function showForm() {
-    document.getElementById("new-book-form").classList.add("form-display");
-}
-
-function cancelForm() {
-    document.getElementById("new-book-form").classList.remove("form-display");
-}
-
-function createRemoveBookListener() {
-    for (var i = 0; i < myLibrary.length; i++) {
-        document.getElementById("remove-book-" + i).addEventListener("click", removeBookFromLibrary);
-    }
-}
-
-function createReadBookListener() {
-    for (var i = 0; i < myLibrary.length; i++) {
-        document.getElementById("read-book-" + i).addEventListener("click", changeReadStatus);
-    }
-}
-
-function render(library) {
-    var libraryTable = "<table border='1'><tr>";
-
-    for (var i = 0; i < library.length; i++) {
-
-        var read = library[i].read ? "read" : "notread";
-
-        libraryTable += "<td>" + library[i].name + "</td>"
-            + "<td>" + library[i].description + "</td>"
-            + "<td>" + library[i].author + "</td>"
-            + "<td><button type='button' id='remove-book-" + i + "' libraryindex='" + i + "'>X</button></td>"
-            + "<td id='read-book-" + i + "' libraryindex='" + i + "' class='" + read + "'>Read</td>";
-
-        var next = i + 1;
-
-        if (next != library.length) {
-            libraryTable += "</tr><tr>";
-        }
-    }
-    libraryTable += "</tr></table>"
-
-    document.getElementById("container").innerHTML = libraryTable;
-
-    createRemoveBookListener();
-    createReadBookListener();
-}
-
-function init() {
-
-    const bookA = new Book("First", "First Description", 10, "Bill", true);
-    const bookB = new Book("Second", "Second Description", 10, "Bob", false);
-    const bookC = new Book("Third", "Third Description", 10, "Burger", false);
-
-    myLibrary.push(bookA, bookB, bookC);
-
-    render(myLibrary);
-
-    document.getElementById("show-form").addEventListener("click", showForm);
-
-    document.getElementById("cancel-form").addEventListener("click", cancelForm);
-
-    document.getElementById("add-book").addEventListener("click", addBookToLibrary);
-}
-
-class Library extends React.Component {
+class Container extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-
+            displayForm: false,
+            books: [
+                {
+                    name: 'first',
+                    description: 'description',
+                    pages: 10,
+                    author: 'Bill',
+                    read: false,
+                },
+                {   
+                    name: 'second',
+                    description: 'description',
+                    pages: 10,
+                    author: 'Bob',
+                    read: false
+                },
+                {
+                    name: 'third',
+                    description: 'description',
+                    pages: 10,
+                    author: 'Ben',
+                    read: false
+                },
+            ]
         }
     }
 
-    render () {
+    addBook(name, author, pages, description) {
+        const modifiedLibrary = this.state.books.slice();
+        modifiedLibrary.push({
+            name: name,
+            description: description,
+            pages: pages,
+            author: author,
+            read: false
+        })
+        this.setState({
+            displayForm: false,
+            books: modifiedLibrary
+        });
+    };
+
+    removeBook(i) {
+        const modifiedLibrary = this.state.books.slice();
+        modifiedLibrary.splice(i, 1);
+        this.setState({
+            books: modifiedLibrary
+        });
+    };
+
+    changeRead(i) {
+        const modifiedLibrary = this.state.books.slice();
+        modifiedLibrary[i].read = !modifiedLibrary[i].read;
+        this.setState({
+            books: modifiedLibrary
+        });
+    };
+
+    toggleForm() {
+        this.setState({
+            displayForm: !this.state.displayForm
+        });
+    };
+
+    render() {
         return (
-            <div>Test
+            <div id="container" className="container">
+                <Library 
+                books={this.state.books}
+                removeBook={i => this.removeBook(i)}
+                changeRead={i => this.changeRead(i)}/>
+                <button id="show-form" 
+                        className="new-book-button"
+                        onClick={() => this.toggleForm()}>ADD BOOK
+                </button>
+                <Form 
+                displayForm={this.state.displayForm}
+                addBook={(name, author, pages, desc) => this.addBook(name, author, pages, desc)}
+                cancelBookForm={() => this.toggleForm()}/>
             </div>
         );
     }
 }
 
+function Library (props) {
+    return (props.books.map((book, index) => {
+            return <Book 
+                    key={book.name}
+                    name={book.name}
+                    description={book.description}
+                    author={book.author}
+                    read={book.read}
+                    removeBook={() => props.removeBook(index)}
+                    changeRead={() => props.changeRead(index)}/>    
+                })
+    );
+}
+
+function Book (props) {
+    return (
+        <div className="book">
+            <span className="book__name">{props.name}</span>
+            <span className="book__desc">{props.description}</span>
+            <span className="book__author">{props.author}</span>
+            <span 
+            className={`book__read ${props.read? 'read' : 'notread'}`}
+            onClick={props.changeRead}>READ
+            </span>
+            <button className="book__remove" onClick={props.removeBook}>REMOVE</button>
+        </div>
+    );
+};
+
+class Form extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            name: '',
+            author: '',
+            pages: 0,
+            description: ''
+        }
+    }
+
+    handleNameChange(event) {
+        this.setState({name: event.target.value});
+    };
+
+    handleAuthorChange(event) {
+        this.setState({author: event.target.value});
+    };
+
+    handlePageChange(event) {
+        this.setState({pages: event.target.value});
+    };
+
+    handleDescriptionChange(event) {
+        this.setState({description: event.target.value});
+    };
+
+    handleSubmit(event) {
+        this.props.addBook(this.state.name, this.state.author, this.state.pages, this.state.description);
+        this.setState({
+            name: '',
+            author: '',
+            pages: 0,
+            description: ''
+        });
+        event.preventDefault();
+    }
+
+    render() {
+        if (!this.props.displayForm) {
+            return null;
+        }
+        return (
+            <form id="new-book-form" 
+            onSubmit={(i) => this.handleSubmit(i)}>
+                <label htmlFor="new-book-name">Name: (*)</label>
+                <input type="text" id="new-book-name" placeholder="Please enter the book's name..." 
+                value={this.state.name}
+                onChange={(i) => this.handleNameChange(i)}/>
+                <label htmlFor="new-book-author">Author: (*)</label>
+                <input type="text" id="new-book-author" placeholder="Please enter the book's author..." 
+                value={this.state.author}
+                onChange={(i) => this.handleAuthorChange(i)}/>
+                <label htmlFor="new-book-pages">Pages: (*)</label>
+                <input type="number" id="new-book-pages" placeholder="Please enter how many pages the book has..." 
+                value={this.state.pages}
+                onChange={(i) => this.handlePageChange(i)}/>
+                <label htmlFor="new-book-description">Description:</label>
+                <textarea id="new-book-description" placeholder="Please enter a description of the book..."
+                value={this.state.description}
+                onChange={(i) => this.handleDescriptionChange(i)}>
+                </textarea>
+                <div>
+                    <button type="submit" form="new-book-form" id="add-book">Add
+                    </button>
+                    <button type="button" id="cancel-form"
+                    onClick={this.props.cancelBookForm}>Cancel</button>
+                </div>
+            </form>
+        );
+    }
+}
+
 ReactDOM.render(
-    <Library />,
+    <Container />,
     document.getElementById('root')
 );

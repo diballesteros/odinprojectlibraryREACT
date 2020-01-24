@@ -1,4 +1,4 @@
-body{
+body {
     font-family: ClearSans;
     display: flex;
     flex-flow: column;
@@ -6,21 +6,57 @@ body{
     justify-content: center;
 }
 
+.book {
+    display: flex;
+    border: 1px solid;
+}
+
+.book .book__name {
+    width: 200px;
+    border-right: 1px solid;
+}
+
+.book .book__desc {
+    width: 200px;
+    border-right: 1px solid;
+}
+
+.book .book__author {
+    width: 150px;
+    border-right: 1px solid;
+}
+
+.book .book__read {
+    width: 50px;
+    border-right: 1px solid;
+}
+
+.book .book__remove {
+    width: 100px;
+}
+
+.book .read {
+    background-color: green;
+    cursor: pointer;
+}
+
+.book .notread {
+    background-color: red;
+    cursor: pointer;
+}
+
 .new-book-button {
     margin: 10px 0px;
+    cursor: pointer;
 }
 
 form {
-    display: none;
+    display: flex;
     flex-flow: column;
     justify-content: space-evenly;
     border: 1px solid;
     width: 620px;
     max-width: 620px;
-}
-
-.form-display {
-    display: flex;
 }
 
 input {
@@ -51,16 +87,8 @@ form div {
     justify-content: space-around;
     margin: 5px;
 }
+
 form button {
     width: 30%;
 }
 
-.read {
-    background-color: green;
-    cursor: pointer;
-}
-
-.notread {
-    background-color: red;
-    cursor: pointer;
-}
